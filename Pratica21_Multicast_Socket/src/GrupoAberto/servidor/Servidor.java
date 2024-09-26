@@ -8,6 +8,7 @@ import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -50,19 +51,25 @@ public class Servidor {
 					pacoteRecepcao = new DatagramPacket(dadosRecepcao,dadosRecepcao.length);
 					ms.receive(pacoteRecepcao);
 					
-					System.out.write(dadosRecepcao, 0,
-					pacoteRecepcao.getLength());
+					//System.out.write(dadosRecepcao, 0,
+					//pacoteRecepcao.getLength());
 					
-					textoRecebido = dadosRecepcao.toString();
+					dadosRecepcao = pacoteRecepcao.getData();
+					textoRecebido = new String(dadosRecepcao,0,pacoteRecepcao.getLength());
 					if(textoRecebido.split("--")[0].equals("2")) {
+						System.out.println("Processar requisicao de usuario");
 						filaRequisicoes.add(textoRecebido.split("-")[1]);
+						
+					}
+					else if(textoRecebido.split("--")[0].equals("1")) {
+						System.out.println("Parar drones");
 						
 					}
 					else {
 						//System.out.println(textoRecebido);	
 					    listaDados.put(
 					    		textoRecebido.split("--")[0],
-					    		textoRecebido.split("--")[0]);
+					    		textoRecebido.split("--")[1]);
 					    
 					}
 					
@@ -85,6 +92,7 @@ public class Servidor {
 				while (flag) {
 				
 					if(!filaRequisicoes.isEmpty()){
+						
 						textoLista = listaDados.toString();
 						
 						dadosEnvio = textoLista.toString().getBytes(StandardCharsets.UTF_8);

@@ -21,7 +21,7 @@ public class User {
 		int portaUsuario = random.nextInt(40000, 50000);
 		
 		MulticastSocket ms = new MulticastSocket(portaUsuario);
-		System.out.println("Servidor: " +
+		System.out.println("Usuario: " +
 		InetAddress.getLocalHost() +
 		" -- executando na porta " +
 		ms.getLocalPort());
@@ -47,7 +47,7 @@ public class User {
 						+ "\n2) Visualizar dados coletados"
 						+ "\n3) Finalizar coleta de dados");
 				String msg = entrada.nextLine();
-				msg = msg +"-"+portaUsuario;
+				msg = msg +"--"+portaUsuario;
 				dadosEnvio = msg.getBytes(StandardCharsets.UTF_8);
 				
 				System.out.println("\nEnviando mensagem ao grupo " +
@@ -77,6 +77,7 @@ public class User {
 				
 				ms.close();
 		});
+		envio.start();
 		
 		Thread recepcao = new Thread(()->{
 			boolean flag = true;
@@ -102,6 +103,7 @@ public class User {
 			e.printStackTrace();
 			}
 		});
+		recepcao.start();
 	}
 	
 	public static void main(String[] args) throws IOException {

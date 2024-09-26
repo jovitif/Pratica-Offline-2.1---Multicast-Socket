@@ -35,7 +35,7 @@ public class Drone {
 		while (flag) {
 			String msg = df.format(random.nextDouble(22.0d,36.0d));
 			String time = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").format(Calendar.getInstance().getTime());
-			msg = time + "--" + msg + "T";
+			msg = time + "--" + msg;
 			
 			bufferEnvio = msg.getBytes(StandardCharsets.UTF_8);
 			
