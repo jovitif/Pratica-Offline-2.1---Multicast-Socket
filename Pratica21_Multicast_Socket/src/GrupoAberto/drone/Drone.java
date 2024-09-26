@@ -20,7 +20,8 @@ public class Drone {
 	private final Integer portaServidor = 55555;
 	
 	public void init() throws IOException, InterruptedException{
-		DatagramSocket ds = new DatagramSocket();
+		Random rand = new Random();
+		DatagramSocket ds = new DatagramSocket(rand.nextInt(20000,30000));
 		System.out.println("Drone " +
 		InetAddress.getLocalHost() +
 		" enviando na porta " +

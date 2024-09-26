@@ -1,6 +1,7 @@
 package GrupoAberto.usuario;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -8,7 +9,9 @@ import java.net.MulticastSocket;
 import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -67,6 +70,7 @@ public class User {
 					InetAddress.getLocalHost() +
 					" finalizou sua operação.");
 				}
+				
 				}
 				} catch (UnknownHostException e) {
 					e.printStackTrace();
@@ -83,8 +87,11 @@ public class User {
 			boolean flag = true;
 			byte dadosRecepcao[] = new byte[1024];
 			DatagramPacket pacoteRecepcao;
+			String textoRecebido;
+			List<String> listaDados;
 			try {
 				while (flag) {
+					
 					pacoteRecepcao = new DatagramPacket(
 							dadosRecepcao,
 							dadosRecepcao.length);
@@ -95,6 +102,14 @@ public class User {
 					":" + pacoteRecepcao.getPort() +
 					" com tamanho: " +
 					pacoteRecepcao.getLength());
+					
+					
+					dadosRecepcao = pacoteRecepcao.getData();
+					textoRecebido = new String(dadosRecepcao,0,pacoteRecepcao.getLength());
+					textoRecebido = textoRecebido.substring(0,textoRecebido.length());
+					listaDados = Arrays.asList(textoRecebido.split(","));
+					
+					
 					System.out.write(dadosRecepcao, 0,
 					pacoteRecepcao.getLength());
 					System.out.println();

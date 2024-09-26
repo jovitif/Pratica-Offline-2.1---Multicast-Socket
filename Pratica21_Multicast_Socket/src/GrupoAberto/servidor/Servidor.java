@@ -18,14 +18,14 @@ import java.util.Scanner;
 public class Servidor {
 	
 	private Map<String,String> listaDados;
-	private Queue<String> filaRequisicoes;
+	private volatile Queue<Integer> filaRequisicoes;
 	private boolean flagDeEnvio;
 	
 	public void init() throws IOException {
 		String ip = "225.7.8.9";
 		int porta = 55555;
 		listaDados = new HashMap<String,String>();
-		filaRequisicoes = new PriorityQueue<String>();
+		filaRequisicoes = new PriorityQueue<Integer>();
 		
 		MulticastSocket ms = new MulticastSocket(porta);
 		System.out.println("Servidor: " +
@@ -51,21 +51,20 @@ public class Servidor {
 					pacoteRecepcao = new DatagramPacket(dadosRecepcao,dadosRecepcao.length);
 					ms.receive(pacoteRecepcao);
 					
-					//System.out.write(dadosRecepcao, 0,
-					//pacoteRecepcao.getLength());
 					
 					dadosRecepcao = pacoteRecepcao.getData();
 					textoRecebido = new String(dadosRecepcao,0,pacoteRecepcao.getLength());
 					if(textoRecebido.split("--")[0].equals("2")) {
-						System.out.println("Processar requisicao de usuario");
-						filaRequisicoes.add(textoRecebido.split("-")[1]);
+						//System.out.println("Processar requisicao de usuario "+pacoteRecepcao.getPort());
+						filaRequisicoes.add(pacoteRecepcao.getPort());
+						flagDeEnvio = true;
 						
 					}
 					else if(textoRecebido.split("--")[0].equals("1")) {
 						System.out.println("Parar drones");
 						
 					}
-					else {
+					else if (pacoteRecepcao.getPort()<30000){
 						//System.out.println(textoRecebido);	
 					    listaDados.put(
 					    		textoRecebido.split("--")[0],
@@ -86,40 +85,38 @@ public class Servidor {
 			DatagramPacket pacoteEnvio;
 			String textoLista = "";
 			String msg = "";
-			String portaUsuario = "";
+			
+			int portaUsuario;
 			
 			try {
 				while (flag) {
-				
-					if(!filaRequisicoes.isEmpty()){
-						
+					
+					if(!filaRequisicoes.isEmpty()) {
 						textoLista = listaDados.toString();
 						
 						dadosEnvio = textoLista.toString().getBytes(StandardCharsets.UTF_8);
 						portaUsuario = filaRequisicoes.poll();
 						
-						System.out.println("\nEnviando mensagem ao usuario " + portaUsuario +
-						"multicast...");
+						System.out.println("\nEnviando mensagem ao usuario " + portaUsuario +" multicast...");
 						pacoteEnvio = new DatagramPacket(
 							dadosEnvio,
 							dadosEnvio.length,
 							InetAddress.getByName(
 							multicastIP.toString().
 							substring(1)),
-							Integer.parseInt(portaUsuario));
+							portaUsuario);
 						
 						ms.send(pacoteEnvio);
-						if (msg.equalsIgnoreCase("3")) {
-							flag = false;
-							System.out.println("Usuario " +
-							InetAddress.getLocalHost() +
-							" finalizou sua operação.");
-						}
+						
+						Thread.sleep(3000);
 					}
 				}
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 				
