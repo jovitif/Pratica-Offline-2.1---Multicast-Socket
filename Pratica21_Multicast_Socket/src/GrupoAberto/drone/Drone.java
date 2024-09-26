@@ -35,7 +35,7 @@ public class Drone {
 		while (flag) {
 			String msg = df.format(random.nextDouble(22.0d,36.0d));
 			String time = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").format(Calendar.getInstance().getTime());
-			msg = time + "--" + msg;
+			msg = time + "--" + msg + "T";
 			
 			bufferEnvio = msg.getBytes(StandardCharsets.UTF_8);
 			
@@ -48,7 +48,7 @@ public class Drone {
 			* Fazendo o envio
 			*/
 			ds.send(pacoteEnvio);
-			System.out.println(msg);
+			//System.out.println(msg);
 			
 			Thread.sleep(3000);
 			if (msg.equalsIgnoreCase("sair")) {

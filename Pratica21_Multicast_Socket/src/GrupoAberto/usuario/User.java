@@ -34,7 +34,7 @@ public class User {
 		
 		ms.joinGroup(grupo, interfaceRede);
 		
-		Thread recepcao = new Thread(()->{
+		Thread envio = new Thread(()->{
 			boolean flag = true;
 			Scanner entrada = new Scanner(System.in);
 			byte dadosEnvio[];
@@ -42,9 +42,12 @@ public class User {
 			
 			try {
 				while (flag) {
-				System.out.println("\n>>> Digite a mensagem: ");
+				System.out.println("\nEscolha uma opcao: "
+						+ "\n1) Iniciar coleta de dados"
+						+ "\n2) Visualizar dados coletados"
+						+ "\n3) Finalizar coleta de dados");
 				String msg = entrada.nextLine();
-				
+				msg = msg +"-"+portaUsuario;
 				dadosEnvio = msg.getBytes(StandardCharsets.UTF_8);
 				
 				System.out.println("\nEnviando mensagem ao grupo " +
@@ -58,9 +61,9 @@ public class User {
 					portaServidor);
 				
 				ms.send(pacoteEnvio);
-				if (msg.equalsIgnoreCase("sair")) {
+				if (msg.split("-")[0].equalsIgnoreCase("3")) {
 					flag = false;
-					System.out.println("Processo " +
+					System.out.println("Usuario " +
 					InetAddress.getLocalHost() +
 					" finalizou sua operação.");
 				}
@@ -71,16 +74,37 @@ public class User {
 					e.printStackTrace();
 				}
 				entrada.close();
-				/*
-				* Fechando o MS
-				*/
+				
 				ms.close();
 		});
 		
-		
+		Thread recepcao = new Thread(()->{
+			boolean flag = true;
+			byte dadosRecepcao[] = new byte[1024];
+			DatagramPacket pacoteRecepcao;
+			try {
+				while (flag) {
+					pacoteRecepcao = new DatagramPacket(
+							dadosRecepcao,
+							dadosRecepcao.length);
+					ms.receive(pacoteRecepcao);
+					
+					System.out.println("\n*** Dados recebidos de: " +
+					pacoteRecepcao.getAddress().toString() +
+					":" + pacoteRecepcao.getPort() +
+					" com tamanho: " +
+					pacoteRecepcao.getLength());
+					System.out.write(dadosRecepcao, 0,
+					pacoteRecepcao.getLength());
+					System.out.println();
+				}
+			} catch (IOException e) {
+			e.printStackTrace();
+			}
+		});
 	}
 	
-	public static void main(String[] args) {
-		
+	public static void main(String[] args) throws IOException {
+		new User().init();
 	}
 }
