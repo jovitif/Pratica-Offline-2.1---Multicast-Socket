@@ -30,7 +30,7 @@ public class ServidorDistribuicao implements Runnable {
 	@Override
 	public void run() {
 		try (MulticastSocket ms = new MulticastSocket(portaMulticast)) {
-			NetworkInterface networkInterface = NetworkInterface.getByName("wlp2s0");
+			NetworkInterface networkInterface = NetworkInterface.getByName("WIFI");
 			InetSocketAddress grupo = new InetSocketAddress(multicastIP, portaMulticast);
 
 			ms.joinGroup(grupo, networkInterface);

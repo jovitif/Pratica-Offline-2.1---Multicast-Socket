@@ -17,7 +17,7 @@ public class UsuarioRecepcao implements Runnable {
 		this.multicastIP = InetAddress.getByName(multicastAddress);
 		this.porta = porta;
 		this.ms = new MulticastSocket(porta);
-		NetworkInterface networkInterface = NetworkInterface.getByName("wlp2s0"); // Adaptar à interface de rede correta
+		NetworkInterface networkInterface = NetworkInterface.getByName("WIFI"); // Adaptar à interface de rede correta
 		ms.joinGroup(new InetSocketAddress(multicastIP, porta), networkInterface);
 	}
 
@@ -42,7 +42,7 @@ public class UsuarioRecepcao implements Runnable {
 	}
 
 	public static void main(String[] args) throws IOException {
-		UsuarioRecepcao usuario = new UsuarioRecepcao("226.7.8.10", 56790);
+		UsuarioRecepcao usuario = new UsuarioRecepcao("225.7.8.10", 56790);
 
 		// Iniciar recebimento de dados do multicast
 		new Thread(usuario).start();
