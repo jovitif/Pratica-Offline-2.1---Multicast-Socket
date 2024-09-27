@@ -88,6 +88,7 @@ public class User {
 			DatagramPacket pacoteRecepcao;
 			String textoRecebido;
 			List<String> listaDados;
+			String dadoIndividual;
 			try {
 				while (flag) {
 					
@@ -102,18 +103,31 @@ public class User {
 					" com tamanho: " +
 					pacoteRecepcao.getLength());
 					
-					System.out.write(dadosRecepcao,0,pacoteRecepcao.getLength());
+					
 					
 					dadosRecepcao = pacoteRecepcao.getData();
 					textoRecebido = new String(dadosRecepcao,0,pacoteRecepcao.getLength());
 					textoRecebido = textoRecebido.substring(1,textoRecebido.length()-1);
 					listaDados = Arrays.asList(textoRecebido.split(","));
 					
-					listaDados.forEach((dado)->{
+					for(String dado : listaDados) {
+						dadoIndividual = dado.split("=")[1];
 						System.out.println(
 								"\nData da coleta: "+dado.split("=")[0] +
-								" Temperatura(C°): "+dado.split("=")[1]);
-					});
+								" Temperatura(C°): "+dadoIndividual.split("L")[0]+
+								" Nível de umidade(%): "+dadoIndividual.split("L")[1]+
+								" Pressão Atmosférica(hPa): "+dadoIndividual.split("L")[2]+
+								" Radiação Solar(Wh/m²): "+dadoIndividual.split("L")[3]);
+					}
+					
+					/*listaDados.forEach((dado)->{
+						System.out.println(
+								"\nData da coleta: "+dado.split("=")[0] +
+								" Temperatura(C°): "+dado.split("=")[1].split("*")[0]+
+								" Nível de umidade(%): "+dado.split("=")[1].split("*")[1]+
+								" Pressão Atmosférica(hPa): "+dado.split("=")[1].split("*")[2]+
+								" Radiação Solar(Wh/m²): "+dado.split("=")[1].split("*")[3]);
+					});*/
 					
 					
 				}

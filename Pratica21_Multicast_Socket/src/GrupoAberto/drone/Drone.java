@@ -38,7 +38,15 @@ public class Drone {
 				while (flag) {
 					String msg = df.format(random.nextInt(22,36));
 					String time = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss").format(Calendar.getInstance().getTime());
-					msg = time + "--" + msg;
+					Integer umid = random.nextInt(30,70);
+					Double pressure = random.nextDouble(1008.0,1012.0);
+					Integer radiation = random.nextInt(4000,5000);
+					msg = time + "--" 
+					+ msg 
+					+ "L" + umid
+					+ "L" + String.format("%.2f", pressure)
+					+ "L" + radiation;
+					msg = msg.replace(',', '.');
 					
 					bufferEnvio = msg.getBytes(StandardCharsets.UTF_8);
 					
@@ -66,6 +74,8 @@ public class Drone {
 			
 		});
 		envio.start();
+		
+
 		
 	}
 	
