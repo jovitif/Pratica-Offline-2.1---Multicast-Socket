@@ -46,9 +46,8 @@ public class User {
 			try {
 				while (flag) {
 				System.out.println("\nEscolha uma opcao: "
-						+ "\n1) Iniciar coleta de dados"
-						+ "\n2) Visualizar dados coletados"
-						+ "\n3) Finalizar coleta de dados");
+						+ "\n1) Iniciar/Parar coleta de dados"
+						+ "\n2) Visualizar dados coletados");
 				String msg = entrada.nextLine();
 				msg = msg +"--"+portaUsuario;
 				dadosEnvio = msg.getBytes(StandardCharsets.UTF_8);
@@ -85,7 +84,7 @@ public class User {
 		
 		Thread recepcao = new Thread(()->{
 			boolean flag = true;
-			byte dadosRecepcao[] = new byte[1024];
+			byte dadosRecepcao[] = new byte[102400];
 			DatagramPacket pacoteRecepcao;
 			String textoRecebido;
 			List<String> listaDados;
@@ -103,16 +102,20 @@ public class User {
 					" com tamanho: " +
 					pacoteRecepcao.getLength());
 					
+					System.out.write(dadosRecepcao,0,pacoteRecepcao.getLength());
 					
 					dadosRecepcao = pacoteRecepcao.getData();
 					textoRecebido = new String(dadosRecepcao,0,pacoteRecepcao.getLength());
-					textoRecebido = textoRecebido.substring(0,textoRecebido.length());
+					textoRecebido = textoRecebido.substring(1,textoRecebido.length()-1);
 					listaDados = Arrays.asList(textoRecebido.split(","));
 					
+					listaDados.forEach((dado)->{
+						System.out.println(
+								"\nData da coleta: "+dado.split("=")[0] +
+								" Temperatura(C°): "+dado.split("=")[1]);
+					});
 					
-					System.out.write(dadosRecepcao, 0,
-					pacoteRecepcao.getLength());
-					System.out.println();
+					
 				}
 			} catch (IOException e) {
 			e.printStackTrace();

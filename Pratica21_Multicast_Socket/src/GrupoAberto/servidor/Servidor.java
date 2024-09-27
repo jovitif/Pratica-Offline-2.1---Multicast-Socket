@@ -19,7 +19,7 @@ public class Servidor {
 	
 	private Map<String,String> listaDados;
 	private volatile Queue<Integer> filaRequisicoes;
-	private boolean flagDeEnvio;
+	private volatile boolean flagSalvarDados;
 	
 	public void init() throws IOException {
 		String ip = "225.7.8.9";
@@ -57,14 +57,21 @@ public class Servidor {
 					if(textoRecebido.split("--")[0].equals("2")) {
 						//System.out.println("Processar requisicao de usuario "+pacoteRecepcao.getPort());
 						filaRequisicoes.add(pacoteRecepcao.getPort());
-						flagDeEnvio = true;
+						
 						
 					}
 					else if(textoRecebido.split("--")[0].equals("1")) {
-						System.out.println("Parar drones");
 						
+						if(flagSalvarDados) { 
+							flagSalvarDados = false;
+							System.out.println("Parar da salvar dados");
+						}
+						else {
+							flagSalvarDados = true;
+							System.out.println("Começar a salvar dados");
+						}	
 					}
-					else if (pacoteRecepcao.getPort()<30000){
+					else if (pacoteRecepcao.getPort()<30000 && flagSalvarDados){
 						//System.out.println(textoRecebido);	
 					    listaDados.put(
 					    		textoRecebido.split("--")[0],
