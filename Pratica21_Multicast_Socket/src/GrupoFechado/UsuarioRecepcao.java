@@ -1,50 +1,82 @@
 package GrupoFechado;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.net.NetworkInterface;
 import java.nio.charset.StandardCharsets;
 
-public class UsuarioRecepcao implements Runnable {
-	private MulticastSocket ms;
-	private InetAddress multicastIP;
-	private int porta;
+public class ServidorCaptura {
+    private int id;
+    private int portaRecepcao;
+    private InetAddress multicastIP;
+    private int portaMulticast;
 
-	public UsuarioRecepcao(String multicastAddress, int porta) throws IOException {
-		this.multicastIP = InetAddress.getByName(multicastAddress);
-		this.porta = porta;
-		this.ms = new MulticastSocket(porta);
-		NetworkInterface networkInterface = NetworkInterface.getByName("WIFI"); // Adaptar à interface de rede correta
-		ms.joinGroup(new InetSocketAddress(multicastIP, porta), networkInterface);
-	}
+    public ServidorCaptura(int id, int portaRecepcao, String multicastIP, int portaMulticast) throws IOException {
+        this.id = id;
+        this.portaRecepcao = portaRecepcao;
+        this.multicastIP = InetAddress.getByName(multicastIP);
+        this.portaMulticast = portaMulticast;
+    }
 
-	@Override
-	public void run() {
-		System.out.println("usuario iniciado");
+    // Método para salvar os dados em um arquivo .txt
+    public void salvarEmArquivo(String dados) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter("dados_recebidos.txt", true))) {
+            writer.write(dados);
+            writer.newLine();
+        } catch (IOException e) {
+            System.err.println("Erro ao salvar os dados no arquivo: " + e.getMessage());
+        }
+    }
 
-		try {
-			byte[] buffer = new byte[1024];
-			while (true) {
-				DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-				ms.receive(packet);
-				System.out.println("Usuario recebeu dados");
-				String dados = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
-				System.out.println("Usuario recebeu: " + dados);
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} finally {
-			ms.close();
-		}
-	}
+    public void iniciarRecepcao() throws IOException {
+        try (MulticastSocket ms = new MulticastSocket(portaRecepcao)) {
+            System.out.println("Servidor " + id + " aguardando dados na porta " + portaRecepcao);
 
-	public static void main(String[] args) throws IOException {
-		UsuarioRecepcao usuario = new UsuarioRecepcao("225.7.8.10", 56790);
+            while (true) {
+                // Recebe dados do drone
+                byte[] dadosRecepcao = new byte[1024];
+                DatagramPacket pacoteRecepcao = new DatagramPacket(dadosRecepcao, dadosRecepcao.length);
+                ms.receive(pacoteRecepcao);
 
-		// Iniciar recebimento de dados do multicast
-		new Thread(usuario).start();
-	}
+                String dados = new String(pacoteRecepcao.getData(), 0, pacoteRecepcao.getLength(), StandardCharsets.UTF_8);
+
+                // Salva os dados no arquivo .txt
+                salvarEmArquivo(dados);
+
+                System.out.println("Servidor " + id + " recebeu: " + dados);
+
+                // Retransmite para o grupo fechado
+                DatagramPacket pacoteEnvio = new DatagramPacket(dadosRecepcao, pacoteRecepcao.getLength(), multicastIP, portaMulticast);
+                ms.send(pacoteEnvio);
+                System.out.println("Servidor " + id + " retransmitiu dados para o grupo.");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void main(String[] args) throws IOException {
+        ServidorCaptura servidor1 = new ServidorCaptura(1, 5000, "225.7.8.9", 56789); // Servidor multicast
+        ServidorCaptura servidor2 = new ServidorCaptura(2, 5001, "225.7.8.9", 56789);
+
+        // Recebe dados dos drones e envia para o grupo multicast
+        new Thread(() -> {
+            try {
+                servidor1.iniciarRecepcao(); // Porta do drone Norte
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+
+        new Thread(() -> {
+            try {
+                servidor2.iniciarRecepcao(); // Porta do drone Sul
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
 }
